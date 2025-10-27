@@ -1,5 +1,4 @@
 const express = require('express');
-const mongoose = require('mongoose');
 const path = require('path');
 const postRoutes = require('./routes/posts');
 const tagRoutes = require('./routes/tags');
@@ -16,41 +15,40 @@ try {
 
 const port = process.env.PORT || 3000;
 
-// رشته اتصال دیتابیس - از متغیر محیطی یا مقدار پیش‌فرض استفاده می‌کند
-const dbURI = process.env.MONGODB_URI || 'mongodb+srv://blog:blogpassword123@cluster0.2gc2dcq.mongodb.net/blog_db?retryWrites=true&w=majority&appName=Cluster0';
-
 // اطلاعات ورود ادمین - از متغیرهای محیطی یا مقادیر پیش‌فرض
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'password123';
 
-// اتصال به MongoDB
-mongoose.connect(dbURI)
-  .then(() => {
-    console.log('✅ موفقیت در اتصال به MongoDB');
-    console.log(`📊 دیتابیس: ${mongoose.connection.name}`);
-    app.listen(port, () => {
-      console.log('\n🚀 سرور با موفقیت راه‌اندازی شد!');
-      console.log('═══════════════════════════════════════');
-      console.log(`📍 آدرس سرور: http://localhost:${port}`);
-      console.log(`🏠 صفحه اصلی (کلینیک): http://localhost:${port}/`);
-      console.log(`📝 وبلاگ: http://localhost:${port}/blog`);
-      console.log(`🔐 پنل مدیریت: http://localhost:${port}/admin`);
-      console.log('═══════════════════════════════════════\n');
-      
-      if (ADMIN_USERNAME === 'admin' && ADMIN_PASSWORD === 'password123') {
-        console.log('⚠️  هشدار: از رمز عبور پیش‌فرض استفاده می‌کنید!');
-        console.log('   لطفاً قبل از استقرار در محیط واقعی، رمز عبور را تغییر دهید.\n');
-      }
-    });
-  })
-  .catch((err) => {
-    console.error('❌ خطا در اتصال به دیتابیس:', err.message);
+// بررسی متغیرهای Supabase
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseAnonKey) {
+    console.error('\n❌ خطا: متغیرهای محیطی Supabase تنظیم نشده‌اند!');
     console.log('\n💡 راهنما:');
-    console.log('   1. مطمئن شوید MongoDB در حال اجراست');
-    console.log('   2. رشته اتصال را در server.js یا فایل .env بررسی کنید');
-    console.log('   3. برای MongoDB Atlas، Network Access را چک کنید\n');
+    console.log('   لطفاً فایل .env را ایجاد کرده و متغیرهای زیر را تنظیم کنید:');
+    console.log('   SUPABASE_URL=https://your-project.supabase.co');
+    console.log('   SUPABASE_ANON_KEY=your-anon-key');
+    console.log('   همچنین مطمئن شوید که فایل supabase-schema.sql را در Supabase اجرا کرده‌اید.\n');
     process.exit(1);
-  });
+}
+
+console.log('✅ اتصال به Supabase موفقیت‌آمیز');
+console.log(`📊 پروژه: ${supabaseUrl}`);
+console.log('\n🚀 سرور با موفقیت راه‌اندازی شد!');
+console.log('═══════════════════════════════════════');
+console.log(`📍 آدرس سرور: http://localhost:${port}`);
+console.log(`🏠 صفحه اصلی (کلینیک): http://localhost:${port}/`);
+console.log(`📝 وبلاگ: http://localhost:${port}/blog`);
+console.log(`🔐 پنل مدیریت: http://localhost:${port}/admin`);
+console.log('═══════════════════════════════════════\n');
+
+if (ADMIN_USERNAME === 'admin' && ADMIN_PASSWORD === 'password123') {
+    console.log('⚠️  هشدار: از رمز عبور پیش‌فرض استفاده می‌کنید!');
+    console.log('   لطفاً قبل از استقرار در محیط واقعی، رمز عبور را تغییر دهید.\n');
+}
+
+app.listen(port);
 
 // Middleware
 app.use(express.static(path.join(__dirname, 'public')));
@@ -97,11 +95,11 @@ app.get('/', (req, res) => {
 // ═══════════════════════════════════════
 
 app.get('/blog', (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'index.html'));
+    res.sendFile(path.join(__dirname, 'views', 'articals.html'));
 });
 
 app.get('/blog/index.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'index.html'));
+    res.redirect('/blog/articals.html');
 });
 
 app.get('/blog/articals.html', (req, res) => {
@@ -141,7 +139,7 @@ app.get('/admin.html', (req, res) => {
 // ═══════════════════════════════════════
 
 app.get('/index.html', (req, res) => {
-    res.redirect('/blog');
+    res.redirect('/blog/articals.html');
 });
 
 app.get('/articals.html', (req, res) => {
@@ -160,13 +158,26 @@ app.get('/login.html', (req, res) => {
 // Health Check
 // ═══════════════════════════════════════
 
-app.get('/health', (req, res) => {
-    res.json({
-        status: 'OK',
-        timestamp: new Date().toISOString(),
-        uptime: process.uptime(),
-        mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
-    });
+app.get('/health', async (req, res) => {
+    try {
+        // تست اتصال به Supabase
+        const supabase = require('./config/supabase');
+        const { error } = await supabase.from('posts').select('id').limit(1);
+        
+        res.json({
+            status: 'OK',
+            timestamp: new Date().toISOString(),
+            uptime: process.uptime(),
+            database: error ? 'error' : 'connected'
+        });
+    } catch (err) {
+        res.json({
+            status: 'ERROR',
+            timestamp: new Date().toISOString(),
+            uptime: process.uptime(),
+            database: 'disconnected'
+        });
+    }
 });
 
 // ═══════════════════════════════════════
@@ -256,11 +267,10 @@ app.use((err, req, res, next) => {
 process.on('SIGINT', async () => {
     console.log('\n\n🛑 در حال خاموش کردن سرور...');
     try {
-        await mongoose.connection.close();
-        console.log('✅ اتصال به MongoDB بسته شد');
+        console.log('✅ سرور با موفقیت خاموش شد');
         process.exit(0);
     } catch (err) {
-        console.error('❌ خطا در بستن اتصال:', err);
+        console.error('❌ خطا در خاموش کردن سرور:', err);
         process.exit(1);
     }
 });

@@ -1,7 +1,7 @@
-// کد کامل این فایل در پاسخ‌های قبلی موجود است و تمام قابلیت‌ها را شامل می‌شود
 document.addEventListener('DOMContentLoaded', () => {
     const path = window.location.pathname;
-    if (path.includes('login.html')) {
+    console.log('Current path:', path);
+    if (path.includes('login.html') || path === '/admin' || path === '/admin/login') {
         initLoginPage();
     } else if (path.includes('admin.html')) {
         initAdminDashboard();
@@ -122,17 +122,26 @@ function initAdminDashboard() {
                 formData.append('postImage', imageInput.files[0]);
             }
             // اضافه کردن ID دسته‌بندی انتخاب شده
-            formData.append('category', document.getElementById('category-select').value);
+            const categoryValue = document.getElementById('category-select').value;
+            if (categoryValue && categoryValue.trim() !== '') {
+                formData.append('category', categoryValue);
+            }
+            // اگر category خالی است، ارسال نکن (null درنظر گرفته می‌شود)
 
             const response = await fetch('/api/posts', {
                 method: 'POST',
                 body: formData
             });
+            
+            const result = await response.json();
+            console.log('Response:', result);
+            
             if (response.ok) {
+                alert('مقاله با موفقیت ایجاد شد!');
                 createForm.reset();
                 fetchAndDisplayPosts();
             } else {
-                alert('خطا در ایجاد مقاله');
+                alert('خطا در ایجاد مقاله: ' + (result.message || 'خطای نامشخص'));
             }
         });
     }

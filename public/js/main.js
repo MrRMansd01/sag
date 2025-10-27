@@ -5,9 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchAndPopulateNavCategories();
 
     const path = window.location.pathname;
-    if (path.includes('/blog') && (path.endsWith('/blog') || path.endsWith('/blog/') || path.endsWith('index.html'))) {
-        initHomePage();
-    } else if (path.includes('articals.html')) {
+    if (path.includes('articals.html') || path.endsWith('/blog') || path.endsWith('/blog/')) {
         initArticlesArchivePage();
     } else if (path.includes('artical_page.html')) {
         initSingleArticlePage();

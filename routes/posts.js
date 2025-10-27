@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const Post = require('../models/post');
+const supabase = require('../config/supabase');
 const multer = require('multer');
 const path = require('path');
 
@@ -17,14 +17,39 @@ const upload = multer({ storage: storage });
 // GET: دریافت تمام مقالات
 router.get('/', async (req, res) => {
     try {
-        const query = {};
-        // اگر در درخواست، آی‌دی دسته‌بندی وجود داشت، به کوئری اضافه کن
+        let query = supabase
+            .from('posts')
+            .select(`
+                *,
+                category:categories (
+                    id,
+                    name
+                )
+            `)
+            .order('created_at', { ascending: false });
+        
+        // فیلتر بر اساس دسته‌بندی
         if (req.query.category) {
-            query.category = req.query.category;
+            query = query.eq('category', req.query.category);
         }
-        const posts = await Post.find(query).sort({ createdAt: -1 }).populate('category');
-        res.json(posts);
+        
+        const { data, error } = await query;
+        
+        if (error) throw error;
+        
+        // تبدیل داده‌ها برای سازگاری با فرمت قبلی
+        const formattedData = data.map(post => ({
+            ...post,
+            _id: post.id,
+            imageUrl: post.image_url,
+            category: post.category || null,
+            createdAt: post.created_at,
+            updatedAt: post.updated_at
+        }));
+        
+        res.json(formattedData);
     } catch (err) {
+        console.error('خطا در دریافت مقالات:', err);
         res.status(500).json({ message: err.message });
     }
 });
@@ -32,10 +57,34 @@ router.get('/', async (req, res) => {
 // GET: دریافت یک مقاله خاص با ID
 router.get('/:id', async (req, res) => {
     try {
-        const post = await Post.findById(req.params.id).populate('category');
-        if (!post) return res.status(404).json({ message: 'مقاله یافت نشد' });
-        res.json(post);
+        const { data, error } = await supabase
+            .from('posts')
+            .select(`
+                *,
+                category:categories (
+                    id,
+                    name
+                )
+            `)
+            .eq('id', req.params.id)
+            .single();
+        
+        if (error) throw error;
+        if (!data) return res.status(404).json({ message: 'مقاله یافت نشد' });
+        
+        // تبدیل داده‌ها برای سازگاری با فرمت قبلی
+        const formattedData = {
+            ...data,
+            _id: data.id,
+            imageUrl: data.image_url,
+            category: data.category || null,
+            createdAt: data.created_at,
+            updatedAt: data.updated_at
+        };
+        
+        res.json(formattedData);
     } catch (err) {
+        console.error('خطا در دریافت مقاله:', err);
         res.status(500).json({ message: err.message });
     }
 });
@@ -47,20 +96,53 @@ router.post('/', upload.single('postImage'), async (req, res) => {
         imageUrl = '/uploads/' + req.file.filename;
     }
 
-    const post = new Post({
+    // تبدیل تگ‌ها به آرایه
+    let tagsArray = [];
+    if (req.body.tags) {
+        if (typeof req.body.tags === 'string') {
+            tagsArray = [req.body.tags];
+        } else if (Array.isArray(req.body.tags)) {
+            tagsArray = req.body.tags;
+        }
+    }
+
+    // مدیریت category - اگر خالی یا undefined است، null کن
+    let categoryValue = null;
+    if (req.body.category && req.body.category.trim() !== '' && req.body.category !== 'undefined') {
+        categoryValue = req.body.category;
+    }
+
+    const postData = {
         title: req.body.title,
         excerpt: req.body.excerpt,
         content: req.body.content,
         author: req.body.author,
-        tags: req.body.tags,
-        imageUrl: imageUrl,
-        category: req.body.category // << اضافه کردن ID دسته‌بندی
-    });
+        tags: tagsArray,
+        image_url: imageUrl || null,
+        category: categoryValue
+    };
 
     try {
-        const newPost = await post.save();
-        res.status(201).json(newPost);
+        const { data, error } = await supabase
+            .from('posts')
+            .insert([postData])
+            .select()
+            .single();
+        
+        if (error) throw error;
+        
+        // فرمت کردن پاسخ برای سازگاری
+        const formattedData = {
+            ...data,
+            _id: data.id,
+            imageUrl: data.image_url,
+            createdAt: data.created_at,
+            updatedAt: data.updated_at
+        };
+        
+        res.status(201).json(formattedData);
     } catch (err) {
+        console.error('خطا در ایجاد مقاله:', err);
         res.status(400).json({ message: err.message });
     }
 });
@@ -68,9 +150,38 @@ router.post('/', upload.single('postImage'), async (req, res) => {
 // PUT: ویرایش یک مقاله
 router.put('/:id', async (req, res) => {
     try {
-        const updatedPost = await Post.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        res.json(updatedPost);
+        const updateData = {
+            ...req.body,
+            updated_at: new Date().toISOString()
+        };
+        
+        // اگر imageUrl ارسال شده، آن را به image_url تبدیل کن
+        if (updateData.imageUrl) {
+            updateData.image_url = updateData.imageUrl;
+            delete updateData.imageUrl;
+        }
+        
+        const { data, error } = await supabase
+            .from('posts')
+            .update(updateData)
+            .eq('id', req.params.id)
+            .select()
+            .single();
+        
+        if (error) throw error;
+        
+        // فرمت کردن پاسخ
+        const formattedData = {
+            ...data,
+            _id: data.id,
+            imageUrl: data.image_url,
+            createdAt: data.created_at,
+            updatedAt: data.updated_at
+        };
+        
+        res.json(formattedData);
     } catch (err) {
+        console.error('خطا در ویرایش مقاله:', err);
         res.status(400).json({ message: err.message });
     }
 });
@@ -78,9 +189,15 @@ router.put('/:id', async (req, res) => {
 // DELETE: حذف یک مقاله
 router.delete('/:id', async (req, res) => {
     try {
-        await Post.findByIdAndDelete(req.params.id);
+        const { error } = await supabase
+            .from('posts')
+            .delete()
+            .eq('id', req.params.id);
+        
+        if (error) throw error;
         res.json({ message: 'مقاله با موفقیت حذف شد' });
     } catch (err) {
+        console.error('خطا در حذف مقاله:', err);
         res.status(500).json({ message: err.message });
     }
 });

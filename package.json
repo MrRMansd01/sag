@@ -1,7 +1,7 @@
 {
   "name": "clinic-blog",
   "version": "2.0.0",
-  "description": "سیستم مدیریت کلینیک زیبایی و وبلاگ - ساخته شده با Node.js، Express و MongoDB",
+  "description": "سیستم مدیریت کلینیک زیبایی و وبلاگ - ساخته شده با Node.js، Express و Supabase",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -14,17 +14,18 @@
     "cms",
     "nodejs",
     "express",
-    "mongodb",
+    "supabase",
+    "postgresql",
     "persian",
     "farsi"
   ],
   "author": "MrRsd01",
   "license": "MIT",
   "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "dotenv": "^16.3.1",
     "express": "^4.18.2",
-    "mongoose": "^8.0.0",
-    "multer": "^1.4.5-lts.1",
-    "dotenv": "^16.3.1"
+    "multer": "^1.4.5-lts.1"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
