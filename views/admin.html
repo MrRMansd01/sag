@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>پنل مدیریت وبلاگ</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .admin-container { width: 90%; max-width: 1000px; margin: 2rem auto; }
+        .post-item { display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: #fff; border: 1px solid #e5e9ec; border-radius: 8px; margin-bottom: 1rem; }
+        .post-item-actions button { margin-right: 0.5rem; padding: 0.5rem 1rem; border: none; border-radius: 5px; cursor: pointer; }
+        .btn-delete { background-color: #e74c3c; color: white; }
+        .admin-form { background: #f9f9f9; padding: 2rem; border-radius: 12px; margin-top: 2rem; }
+        .admin-form .form-group { margin-bottom: 1rem; }
+        .admin-form label { display: block; margin-bottom: 0.5rem; }
+        .admin-form input, .admin-form textarea { width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 8px; }
+        .admin-form textarea { min-height: 150px; }
+        .suggestions-box { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #ddd; border-top: none; border-radius: 0 0 8px 8px; z-index: 10; max-height: 150px; overflow-y: auto; }
+        .suggestion-item { padding: 0.75rem; cursor: pointer; }
+        .suggestion-item:hover { background-color: #f0f0f0; }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <h1>پنل مدیریت</h1>
+    
+        <div class="admin-form" style="margin-bottom: 2rem;">
+            <h2>مدیریت دسته‌بندی‌ها</h2>
+            <form id="category-form">
+                <div class="form-group">
+                    <label for="category-name">نام دسته‌بندی جدید</label>
+                    <input type="text" id="category-name" required>
+                </div>
+                <button type="submit" class="btn">ایجاد دسته‌بندی</button>
+            </form>
+            <h3 style="margin-top: 1.5rem;">دسته‌بندی‌های موجود:</h3>
+            <ul id="category-list"></ul>
+        </div>
+
+        <div class="admin-form">
+            <h2>ایجاد مقاله جدید</h2>
+            <form id="create-post-form" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="category-select">انتخاب دسته‌بندی</label>
+                    <select id="category-select" required>
+                        <option value="">یک دسته‌بندی انتخاب کنید...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="title">عنوان</label>
+                    <input type="text" id="title" required>
+                </div>
+                <div class="form-group">
+                    <label for="excerpt">خلاصه</label>
+                    <input type="text" id="excerpt" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="postImage">تصویر شاخص</label>
+                    <input type="file" id="postImage" name="postImage">
+                </div>
+
+                <div class="form-group">
+                    <label for="content">محتوا (HTML مجاز است)</label>
+                    <textarea id="content" required></textarea>
+                </div>
+                <div class="form-group" style="position: relative;">
+                    <label for="tags">تگ‌ها (با ویرگول جدا کنید)</label>
+                    <input type="text" id="tags" placeholder="مثال: روانشناسی, مشاوره" autocomplete="off">
+                    <div id="tag-suggestions" class="suggestions-box"></div>
+                </div>
+                 <div class="form-group">
+                    <label for="author">نویسنده</label>
+                    <input type="text" id="author" value="دکتر سعادت اله روحانی" required>
+                </div>
+                <button type="submit" class="btn">ایجاد مقاله</button>
+            </form>
+        </div>
+        
+        <hr style="margin: 2rem 0;">
+        <h2>لیست مقالات</h2>
+        <div id="posts-list">
+            </div>
+    </div>
+    <script src="/js/admin.js"></script>
+</body>
+</html>
