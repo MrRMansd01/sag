@@ -128,8 +128,13 @@ function initAdminDashboard() {
             }
             // اگر category خالی است، ارسال نکن (null درنظر گرفته می‌شود)
 
-            const response = await fetch('/api/posts', {
-                method: 'POST',
+            // تشخیص ایجاد یا ویرایش
+            const isEditing = currentEditingId !== null;
+            const url = isEditing ? `/api/posts/${currentEditingId}` : '/api/posts';
+            const method = isEditing ? 'PUT' : 'POST';
+
+            const response = await fetch(url, {
+                method: method,
                 body: formData
             });
             
@@ -137,15 +142,26 @@ function initAdminDashboard() {
             console.log('Response:', result);
             
             if (response.ok) {
-                alert('مقاله با موفقیت ایجاد شد!');
+                if (isEditing) {
+                    alert('مقاله با موفقیت ویرایش شد!');
+                } else {
+                    alert('مقاله با موفقیت ایجاد شد!');
+                }
+                
+                // بازنشانی فرم و دکمه‌ها
                 createForm.reset();
+                cancelEdit();
+                
                 fetchAndDisplayPosts();
             } else {
-                alert('خطا در ایجاد مقاله: ' + (result.message || 'خطای نامشخص'));
+                const action = isEditing ? 'ویرایش' : 'ایجاد';
+                alert('خطا در ' + action + ' مقاله: ' + (result.message || 'خطای نامشخص'));
             }
         });
     }
     
+    let currentEditingId = null;
+
     if (postsListContainer) {
         postsListContainer.addEventListener('click', async (e) => {
             if (e.target.classList.contains('btn-delete')) {
@@ -156,9 +172,67 @@ function initAdminDashboard() {
                 }
             }
             if (e.target.classList.contains('btn-edit')) {
-                alert('قابلیت ویرایش هنوز پیاده‌سازی نشده است.');
+                const postId = e.target.dataset.id;
+                await loadPostForEdit(postId);
             }
         });
+    }
+
+    async function loadPostForEdit(postId) {
+        try {
+            const response = await fetch(`/api/posts/${postId}`);
+            const post = await response.json();
+            
+            // پر کردن فرم با اطلاعات مقاله
+            document.getElementById('title').value = post.title;
+            document.getElementById('excerpt').value = post.excerpt;
+            document.getElementById('content').value = post.content;
+            document.getElementById('author').value = post.author;
+            document.getElementById('tags').value = post.tags ? post.tags.join(', ') : '';
+            
+            // اگر category داریم، آن را انتخاب کنیم
+            if (post.category && post.category.id) {
+                document.getElementById('category-select').value = post.category.id;
+            } else {
+                document.getElementById('category-select').value = '';
+            }
+            
+            currentEditingId = post._id;
+            
+            // تغییر دکمه و نمایش دکمه انصراف
+            const submitBtn = document.getElementById('submit-btn');
+            const cancelBtn = document.getElementById('cancel-edit-btn');
+            const formTitle = document.getElementById('form-title');
+            
+            submitBtn.textContent = 'ویرایش مقاله';
+            cancelBtn.style.display = 'block';
+            formTitle.textContent = 'ویرایش مقاله';
+            
+            // اسکرول به فرم
+            createForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            
+        } catch (err) {
+            console.error('خطا در بارگذاری مقاله:', err);
+            alert('خطا در بارگذاری مقاله برای ویرایش');
+        }
+    }
+
+    function cancelEdit() {
+        currentEditingId = null;
+        createForm.reset();
+        const submitBtn = document.getElementById('submit-btn');
+        const cancelBtn = document.getElementById('cancel-edit-btn');
+        const formTitle = document.getElementById('form-title');
+        
+        submitBtn.textContent = 'ایجاد مقاله';
+        cancelBtn.style.display = 'none';
+        formTitle.textContent = 'ایجاد مقاله جدید';
+    }
+
+    // اضافه کردن event listener برای دکمه انصراف
+    const cancelEditBtn = document.getElementById('cancel-edit-btn');
+    if (cancelEditBtn) {
+        cancelEditBtn.addEventListener('click', cancelEdit);
     }
 
     async function fetchPopularTags() {
