@@ -37,7 +37,8 @@
         </div>
 
         <div class="admin-form">
-            <h2>ایجاد مقاله جدید</h2>
+            <h2 id="form-title">ایجاد مقاله جدید</h2>
+            <button type="button" id="cancel-edit-btn" style="display: none; margin-bottom: 1rem; padding: 0.5rem 1rem; background: #e74c3c; color: white; border: none; border-radius: 8px; cursor: pointer;">انصراف از ویرایش</button>
             <form id="create-post-form" enctype="multipart/form-data">
                 <div class="form-group">
                     <label for="category-select">انتخاب دسته‌بندی</label>
@@ -72,7 +73,7 @@
                     <label for="author">نویسنده</label>
                     <input type="text" id="author" value="دکتر سعادت اله روحانی" required>
                 </div>
-                <button type="submit" class="btn">ایجاد مقاله</button>
+                <button type="submit" class="btn" id="submit-btn">ایجاد مقاله</button>
             </form>
         </div>
         
