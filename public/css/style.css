@@ -1,12 +1,5 @@
 /* dad-blog/public/css/style.css */
 
-@font-face {
-    font-family: 'B Nazanin';
-    src: url('/fonts/b-nazanin.woff2') format('woff2'),
-         url('/fonts/b-nazanin.woff') format('woff');
-    font-weight: normal;
-    font-style: normal;
-}
 
 :root {
     --primary-color: #3498db;
@@ -25,7 +18,7 @@
 }
 
 body {
-    font-family: 'B Nazanin', 'Vazirmatn', sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: var(--bg-color);
     color: var(--text-color);
     line-height: 1.8;
