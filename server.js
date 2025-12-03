@@ -68,6 +68,10 @@ app.use('/api/posts', postRoutes);
 app.use('/api/tags', tagRoutes);
 app.use('/api/categories', categoryRoutes);
 
+app.get('/assets/doctor-avatar.svg', (req, res) => {
+    res.sendFile(path.join(__dirname, 'photo_5872972249906744101_x 1.svg'));
+});
+
 // Login Route
 app.post('/login', (req, res) => {
     const { username, password } = req.body;
