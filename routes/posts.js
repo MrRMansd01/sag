@@ -2,29 +2,13 @@ const express = require('express');
 const router = express.Router();
 const supabase = require('../config/supabase');
 const multer = require('multer');
-const fs = require('fs');
 const path = require('path');
 
-// تنظیمات Multer برای ذخیره فایل‌ها
-const storage = multer.diskStorage({
-    destination: function(req, file, cb) {
-        const uploadDir = path.join(__dirname, '..', 'public', 'uploads');
-        try {
-            if (!fs.existsSync(uploadDir)) {
-                fs.mkdirSync(uploadDir, { recursive: true });
-            }
-        } catch (e) {
-            return cb(e);
-        }
-        cb(null, uploadDir);
-    },
-    filename: function(req, file, cb){
-        cb(null, 'postImage-' + Date.now() + path.extname(file.originalname));
-    }
-});
+// تنظیمات Multer برای نگهداری فایل در حافظه (مناسب برای سرورلس)
+const storage = multer.memoryStorage();
 
-const upload = multer({ 
-    storage: storage,
+const upload = multer({
+    storage,
     fileFilter: (req, file, cb) => {
         const allowed = ['.png', '.jpg', '.jpeg', '.gif', '.webp'];
         const ext = path.extname(file.originalname).toLowerCase();
@@ -116,9 +100,28 @@ router.post('/', (req, res) => {
             return res.status(400).json({ message: err.message || 'خطا در آپلود تصویر' });
         }
 
-        let imageUrl = '';
+        let imageUrl = null;
         if (req.file) {
-            imageUrl = '/uploads/' + req.file.filename;
+            const ext = path.extname(req.file.originalname).toLowerCase();
+            const fileName = `postImage-${Date.now()}${ext}`;
+            try {
+                const { error: uploadError } = await supabase
+                    .storage
+                    .from('post-images')
+                    .upload(fileName, req.file.buffer, {
+                        contentType: req.file.mimetype,
+                        upsert: true
+                    });
+                if (uploadError) throw uploadError;
+                const { data: publicData } = supabase
+                    .storage
+                    .from('post-images')
+                    .getPublicUrl(fileName);
+                imageUrl = publicData.publicUrl;
+            } catch (e) {
+                console.error('خطا در آپلود به Supabase Storage:', e);
+                return res.status(400).json({ message: 'خطا در بارگذاری تصویر' });
+            }
         }
 
         // تبدیل تگ‌ها به آرایه
