@@ -171,6 +171,12 @@ a:hover {
     gap: 3rem;
 }
 
+/* مرکز کردن محتوای اصلی در دسکتاپ تا خیلی به راست نچسبد */
+.article-layout .main-content {
+    max-width: 1000px;
+    margin-inline: auto;
+}
+
 /* اگر سایدبار خالی باشد، مخفی و چیدمان تک‌ستون شود (برای دسکتاپ) */
 .article-layout .sidebar:empty { display: none; }
 .article-layout:has(> .sidebar:empty) { grid-template-columns: 1fr; }
