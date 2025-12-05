@@ -179,6 +179,8 @@ a:hover {
     border: 1px solid var(--border-color);
     font-size: 1.08rem;
     line-height: 1.9;
+    max-width: 800px;
+    margin-inline: auto;
 }
 
 .article-content h1 {
@@ -197,6 +199,10 @@ a:hover {
     object-fit: cover;
     border-radius: 12px;
     margin-bottom: 2rem;
+}
+
+.article-page .article-layout {
+    grid-template-columns: 1fr;
 }
 
 /* --- Article Grid & Cards --- */

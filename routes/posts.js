@@ -8,7 +8,7 @@ const path = require('path');
 // تنظیمات Multer برای ذخیره فایل‌ها
 const storage = multer.diskStorage({
     destination: function(req, file, cb) {
-        const uploadDir = './public/uploads/';
+        const uploadDir = path.join(__dirname, '..', 'public', 'uploads');
         try {
             if (!fs.existsSync(uploadDir)) {
                 fs.mkdirSync(uploadDir, { recursive: true });
@@ -23,7 +23,15 @@ const storage = multer.diskStorage({
     }
 });
 
-const upload = multer({ storage: storage });
+const upload = multer({ 
+    storage: storage,
+    fileFilter: (req, file, cb) => {
+        const allowed = ['.png', '.jpg', '.jpeg', '.gif', '.webp'];
+        const ext = path.extname(file.originalname).toLowerCase();
+        if (!allowed.includes(ext)) return cb(new Error('فرمت تصویر مجاز نیست'));
+        cb(null, true);
+    }
+});
 
 // GET: دریافت تمام مقالات
 router.get('/', async (req, res) => {
@@ -101,61 +109,75 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST: ایجاد مقاله جدید همراه با آپلود تصویر
-router.post('/', upload.single('postImage'), async (req, res) => {
-    let imageUrl = '';
-    if (req.file) {
-        imageUrl = '/uploads/' + req.file.filename;
-    }
-
-    // تبدیل تگ‌ها به آرایه
-    let tagsArray = [];
-    if (req.body.tags) {
-        if (typeof req.body.tags === 'string') {
-            tagsArray = [req.body.tags];
-        } else if (Array.isArray(req.body.tags)) {
-            tagsArray = req.body.tags;
+router.post('/', (req, res) => {
+    upload.single('postImage')(req, res, async (err) => {
+        if (err) {
+            console.error('خطا در آپلود تصویر:', err);
+            return res.status(400).json({ message: err.message || 'خطا در آپلود تصویر' });
         }
-    }
 
-    // مدیریت category - اگر خالی یا undefined است، null کن
-    let categoryValue = null;
-    if (req.body.category && req.body.category.trim() !== '' && req.body.category !== 'undefined') {
-        categoryValue = req.body.category;
-    }
+        let imageUrl = '';
+        if (req.file) {
+            imageUrl = '/uploads/' + req.file.filename;
+        }
 
-    const postData = {
-        title: req.body.title,
-        excerpt: req.body.excerpt,
-        content: req.body.content,
-        author: req.body.author,
-        tags: tagsArray,
-        image_url: imageUrl || null,
-        category: categoryValue
-    };
+        // تبدیل تگ‌ها به آرایه
+        let tagsArray = [];
+        if (req.body.tags) {
+            if (typeof req.body.tags === 'string') {
+                tagsArray = [req.body.tags];
+            } else if (Array.isArray(req.body.tags)) {
+                tagsArray = req.body.tags;
+            }
+        }
+        tagsArray = tagsArray.map(t => (t || '').trim()).filter(Boolean);
 
-    try {
-        const { data, error } = await supabase
-            .from('posts')
-            .insert([postData])
-            .select()
-            .single();
-        
-        if (error) throw error;
-        
-        // فرمت کردن پاسخ برای سازگاری
-        const formattedData = {
-            ...data,
-            _id: data.id,
-            imageUrl: data.image_url,
-            createdAt: data.created_at,
-            updatedAt: data.updated_at
+        // مدیریت category - اگر خالی یا undefined است، null کن
+        let categoryValue = null;
+        if (req.body.category && req.body.category.trim() !== '' && req.body.category !== 'undefined') {
+            categoryValue = req.body.category;
+        }
+
+        const required = ['title','excerpt','content','author'];
+        for (const f of required) {
+            if (!req.body[f] || !req.body[f].trim()) {
+                return res.status(400).json({ message: `فیلد ${f} الزامی است` });
+            }
+        }
+
+        const postData = {
+            title: req.body.title,
+            excerpt: req.body.excerpt,
+            content: req.body.content,
+            author: req.body.author,
+            tags: tagsArray,
+            image_url: imageUrl || null,
+            category: categoryValue
         };
-        
-        res.status(201).json(formattedData);
-    } catch (err) {
-        console.error('خطا در ایجاد مقاله:', err);
-        res.status(400).json({ message: err.message });
-    }
+
+        try {
+            const { data, error } = await supabase
+                .from('posts')
+                .insert([postData])
+                .select()
+                .single();
+            
+            if (error) throw error;
+            
+            const formattedData = {
+                ...data,
+                _id: data.id,
+                imageUrl: data.image_url,
+                createdAt: data.created_at,
+                updatedAt: data.updated_at
+            };
+            
+            res.status(201).json(formattedData);
+        } catch (err) {
+            console.error('خطا در ایجاد مقاله:', err);
+            res.status(400).json({ message: err.message });
+        }
+    });
 });
 
 // PUT: ویرایش یک مقاله
