@@ -128,16 +128,21 @@ async function fetchAndDisplaySingleArticle(articleId) {
 }
 
 async function fetchAndDisplaySidebarPosts() {
-    const sidebarList = document.getElementById('sidebar-latest-posts');
-    if (!sidebarList) return;
+    const targets = [
+        document.getElementById('sidebar-latest-posts'),
+        document.getElementById('article-bottom-latest')
+    ].filter(Boolean);
+    if (!targets.length) return;
     try {
         const response = await fetch(API_URL_POSTS);
         const articles = await response.json();
-        sidebarList.innerHTML = '';
-        articles.slice(0, 5).forEach(article => {
-            const listItem = document.createElement('li');
-            listItem.innerHTML = `<a href="/blog/artical_page.html?id=${article._id}">${article.title}</a>`;
-            sidebarList.appendChild(listItem);
+        targets.forEach(list => {
+            list.innerHTML = '';
+            articles.slice(0, 5).forEach(article => {
+                const item = document.createElement('li');
+                item.innerHTML = `<a href="/blog/artical_page.html?id=${article._id}">${article.title}</a>`;
+                list.appendChild(item);
+            });
         });
     } catch (error) { console.error('Error loading sidebar posts:', error); }
 }
@@ -146,7 +151,8 @@ async function fetchAndDisplaySidebarCategories() {
     const targets = [
         document.getElementById('sidebar-categories-list'),
         document.getElementById('main-categories-list'),
-        document.getElementById('home-categories-list')
+        document.getElementById('home-categories-list'),
+        document.getElementById('article-bottom-categories')
     ].filter(Boolean);
     if (!targets.length) return;
     try {
