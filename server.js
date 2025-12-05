@@ -22,18 +22,21 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'password123';
 // بررسی متغیرهای Supabase
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-if (!supabaseUrl || !supabaseAnonKey) {
+if (!supabaseUrl || (!supabaseAnonKey && !supabaseServiceRoleKey)) {
     console.error('\n❌ خطا: متغیرهای محیطی Supabase تنظیم نشده‌اند!');
     console.log('\n💡 راهنما:');
     console.log('   لطفاً فایل .env را ایجاد کرده و متغیرهای زیر را تنظیم کنید:');
     console.log('   SUPABASE_URL=https://your-project.supabase.co');
-    console.log('   SUPABASE_ANON_KEY=your-anon-key');
+    console.log('   SUPABASE_SERVICE_ROLE_KEY=your-service-role-key (ترجیحاً در سرور)');
+    console.log('   یا SUPABASE_ANON_KEY=your-anon-key');
     console.log('   همچنین مطمئن شوید که فایل supabase-schema.sql را در Supabase اجرا کرده‌اید.\n');
     process.exit(1);
 }
 
 console.log('✅ اتصال به Supabase موفقیت‌آمیز');
+console.log(supabaseServiceRoleKey ? '🔐 استفاده از Service Role Key' : '👤 استفاده از Anon Key');
 console.log(`📊 پروژه: ${supabaseUrl}`);
 console.log('\n🚀 سرور با موفقیت راه‌اندازی شد!');
 console.log('═══════════════════════════════════════');

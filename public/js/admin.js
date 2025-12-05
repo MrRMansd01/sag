@@ -82,7 +82,7 @@ function initAdminDashboard() {
 
             // اضافه کردن به منوی کشویی فرم
             const option = document.createElement('option');
-            option.value = cat._id;
+            option.value = cat.id;
             option.textContent = cat.name;
             categorySelect.appendChild(option);
         });

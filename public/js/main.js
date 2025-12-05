@@ -23,7 +23,7 @@ async function fetchAndPopulateNavCategories() {
         categories.forEach(cat => {
             const link = document.createElement('a');
             link.className = 'dropdown-item';
-            link.href = `/blog/articals.html?category=${cat._id}`;
+            link.href = `/blog/articals.html?category=${cat.id}`;
             link.textContent = cat.name;
             dropdown.appendChild(link);
         });
@@ -162,7 +162,7 @@ async function fetchAndDisplaySidebarCategories() {
             list.innerHTML = `<li><a href="/blog/articals.html">همه مقالات</a></li>`;
             categories.forEach(cat => {
                 const item = document.createElement('li');
-                item.innerHTML = `<a href="/blog/articals.html?category=${cat._id}">${cat.name}</a>`;
+                item.innerHTML = `<a href="/blog/articals.html?category=${cat.id}">${cat.name}</a>`;
                 list.appendChild(item);
             });
         });

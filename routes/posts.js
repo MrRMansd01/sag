@@ -2,11 +2,22 @@ const express = require('express');
 const router = express.Router();
 const supabase = require('../config/supabase');
 const multer = require('multer');
+const fs = require('fs');
 const path = require('path');
 
 // تنظیمات Multer برای ذخیره فایل‌ها
 const storage = multer.diskStorage({
-    destination: './public/uploads/',
+    destination: function(req, file, cb) {
+        const uploadDir = './public/uploads/';
+        try {
+            if (!fs.existsSync(uploadDir)) {
+                fs.mkdirSync(uploadDir, { recursive: true });
+            }
+        } catch (e) {
+            return cb(e);
+        }
+        cb(null, uploadDir);
+    },
     filename: function(req, file, cb){
         cb(null, 'postImage-' + Date.now() + path.extname(file.originalname));
     }
