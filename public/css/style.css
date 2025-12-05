@@ -323,6 +323,8 @@ a:hover {
 .copyright p {
     margin-bottom: 0;
 }
+/* نمایش عناصر فقط-موبایل */
+.mobile-only { display: none; }
 /* --- Sticky Footer Solution --- */
 html {
     height: 100%;
@@ -454,4 +456,9 @@ main {
     .page-title { font-size: 1.8rem; }
     .card-image img { height: 160px; }
     .main-nav .nav-item > a { padding: 8px 4px; }
+}
+
+@media (max-width: 768px) {
+    .mobile-only { display: block; }
+    .sidebar { display: none; }
 }
