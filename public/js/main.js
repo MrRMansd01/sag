@@ -143,16 +143,22 @@ async function fetchAndDisplaySidebarPosts() {
 }
 
 async function fetchAndDisplaySidebarCategories() {
-    const categoriesList = document.getElementById('sidebar-categories-list');
-    if (!categoriesList) return;
+    const targets = [
+        document.getElementById('sidebar-categories-list'),
+        document.getElementById('main-categories-list'),
+        document.getElementById('home-categories-list')
+    ].filter(Boolean);
+    if (!targets.length) return;
     try {
         const response = await fetch(API_URL_CATEGORIES);
         const categories = await response.json();
-        categoriesList.innerHTML = `<li><a href="/blog/articals.html">همه مقالات</a></li>`;
-        categories.forEach(cat => {
-            const listItem = document.createElement('li');
-            listItem.innerHTML = `<a href="/blog/articals.html?category=${cat._id}">${cat.name}</a>`;
-            categoriesList.appendChild(listItem);
+        targets.forEach(list => {
+            list.innerHTML = `<li><a href="/blog/articals.html">همه مقالات</a></li>`;
+            categories.forEach(cat => {
+                const item = document.createElement('li');
+                item.innerHTML = `<a href="/blog/articals.html?category=${cat._id}">${cat.name}</a>`;
+                list.appendChild(item);
+            });
         });
     } catch (error) { console.error('Error loading sidebar categories:', error); }
 }
