@@ -3,6 +3,7 @@ const API_URL_CATEGORIES = '/api/categories';
 
 document.addEventListener('DOMContentLoaded', () => {
     fetchAndPopulateNavCategories();
+    initMobileNav();
 
     const path = window.location.pathname;
     if (path.includes('articals.html') || path.endsWith('/blog') || path.endsWith('/blog/')) {
@@ -154,4 +155,13 @@ async function fetchAndDisplaySidebarCategories() {
             categoriesList.appendChild(listItem);
         });
     } catch (error) { console.error('Error loading sidebar categories:', error); }
+}
+function initMobileNav() {
+    const toggle = document.querySelector('.nav-toggle');
+    const nav = document.querySelector('.main-nav');
+    if (!toggle || !nav) return;
+    toggle.addEventListener('click', () => {
+        document.body.classList.toggle('nav-open');
+        nav.classList.toggle('active');
+    });
 }
