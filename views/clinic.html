@@ -492,6 +492,12 @@
             transition: all 0.3s ease;
         }
 
+        .social-link img {
+            width: 24px;
+            height: 24px;
+            display: block;
+        }
+
         .social-link:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 25px rgba(70, 82, 47, 0.4);
@@ -853,6 +859,11 @@
                 }
             });
         });
+
+        const instagramLink = document.querySelector('.social-links a[href^="https://instagram.com"]');
+        const telegramLink = document.querySelector('.social-links a[href^="https://t.me"]');
+        if (instagramLink) instagramLink.innerHTML = '<img src="/assets/instagram.svg" alt="Instagram">';
+        if (telegramLink) telegramLink.innerHTML = '<img src="/assets/telegram.svg" alt="Telegram">';
     </script>
 </body>
 </html>

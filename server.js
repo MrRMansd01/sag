@@ -79,6 +79,14 @@ app.get('/assets/logo-icon.svg', (req, res) => {
     res.sendFile(path.join(__dirname, 'Untitled_design__1_-removebg-preview 1.svg'));
 });
 
+app.get('/assets/instagram.svg', (req, res) => {
+    res.sendFile(path.join(__dirname, 'instagram-icon-svgrepo-com.svg'));
+});
+
+app.get('/assets/telegram.svg', (req, res) => {
+    res.sendFile(path.join(__dirname, 'telegram-svgrepo-com.svg'));
+});
+
 // Login Route
 app.post('/login', (req, res) => {
     const { username, password } = req.body;
