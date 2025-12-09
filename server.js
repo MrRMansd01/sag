@@ -87,6 +87,14 @@ app.get('/assets/telegram.svg', (req, res) => {
     res.sendFile(path.join(__dirname, 'telegram-svgrepo-com.svg'));
 });
 
+app.get('/assets/call.svg', (req, res) => {
+    res.sendFile(path.join(__dirname, 'call-svgrepo-com.svg'));
+});
+
+app.get('/assets/message.svg', (req, res) => {
+    res.sendFile(path.join(__dirname, 'message-square-svgrepo-com.svg'));
+});
+
 // Login Route
 app.post('/login', (req, res) => {
     const { username, password } = req.body;
