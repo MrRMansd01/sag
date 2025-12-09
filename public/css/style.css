@@ -95,6 +95,11 @@ a:hover {
     color: var(--text-color);
 }
 
+.logo img {
+    height: 36px;
+    display: block;
+}
+
 .main-nav ul {
     list-style: none;
     display: flex;

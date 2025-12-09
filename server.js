@@ -76,7 +76,7 @@ app.get('/assets/doctor-avatar.svg', (req, res) => {
 });
 
 app.get('/assets/logo-icon.svg', (req, res) => {
-    res.sendFile(path.join(__dirname, 'photo_5872972249906744100_x-removebg-preview 1.svg'));
+    res.sendFile(path.join(__dirname, 'Untitled_design__1_-removebg-preview 1.svg'));
 });
 
 // Login Route
